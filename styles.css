@@ -359,7 +359,7 @@ h1 {
 
 .account-menu.has-status .account-status {
   max-height: 3em;
-  margin-top: 21px;
+  margin-top: 28px;
   opacity: 1;
 }
 
@@ -849,6 +849,10 @@ h3 a:hover {
 
   .sign-in-form p {
     margin-bottom: 16px;
+  }
+
+  .account-menu.has-status .account-status {
+    margin-top: 28px;
   }
 
   .sign-in-form button {

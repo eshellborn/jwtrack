@@ -252,20 +252,6 @@ h1 {
   justify-content: center;
   column-gap: 12px;
   row-gap: 28px;
-  opacity: 1;
-  visibility: visible;
-  transition:
-    opacity 220ms ease,
-    visibility 0s linear;
-}
-
-.account-menu.sign-in-feedback .sign-in-form {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition:
-    opacity 220ms ease,
-    visibility 0s linear 220ms;
 }
 
 .sign-in-form p {
@@ -352,29 +338,11 @@ h1 {
 
 .account-status {
   min-height: 0;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 0.78rem;
-  line-height: 1.35;
-}
-
-.account-menu.sign-in-feedback .account-status {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 64px max(72px, calc((100vw - 1120px) / 2 + 72px));
+  margin-top: 20px;
   color: white;
   font-size: 0.9rem;
   line-height: 1.4;
   text-align: center;
-  opacity: 0;
-  animation: signInStatusEnter 220ms ease 180ms forwards;
-}
-
-@keyframes signInStatusEnter {
-  to {
-    opacity: 1;
-  }
 }
 
 .account-status:empty {
@@ -796,16 +764,6 @@ h3 a:hover {
 @media (prefers-reduced-motion: reduce) {
   .empty.all-caught-up {
     animation: none;
-  }
-
-  .sign-in-form,
-  .account-menu.sign-in-feedback .sign-in-form {
-    transition: none;
-  }
-
-  .account-menu.sign-in-feedback .account-status {
-    animation: none;
-    opacity: 1;
   }
 }
 

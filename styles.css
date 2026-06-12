@@ -869,10 +869,10 @@ h3 a:hover {
 
   .account-menu {
     width: 100vw;
-    height: 280px;
+    height: 304px;
     right: auto;
     left: 0;
-    padding: 33px 16px;
+    padding: 45px 16px;
   }
 
   .sheet-close-button {

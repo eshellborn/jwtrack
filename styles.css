@@ -337,8 +337,8 @@ h1 {
 }
 
 .account-status {
-  min-height: 0;
-  margin-top: 20px;
+  min-height: 2.8em;
+  margin-top: 28px;
   color: white;
   font-size: 0.9rem;
   line-height: 1.4;
@@ -346,11 +346,11 @@ h1 {
 }
 
 .account-status:empty {
-  display: none;
+  visibility: hidden;
 }
 
 .account-status.error {
-  color: #ffe3df;
+  color: white;
 }
 
 .subtle {

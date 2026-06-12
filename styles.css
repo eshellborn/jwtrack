@@ -843,8 +843,8 @@ h3 a:hover {
 
 @media (max-width: 680px) {
   .account-menu {
-    height: 304px;
-    padding-block: 45px;
+    height: 290px;
+    padding-block: 38px;
   }
 
   .sign-in-form {

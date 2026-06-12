@@ -305,6 +305,10 @@ function updateAccountUI() {
 }
 
 function setAccountMenuOpen(open) {
+  if (!open && accountMenu.classList.contains("sign-in-feedback")) {
+    accountMenu.classList.remove("sign-in-feedback");
+    setAccountStatus("");
+  }
   accountMenu.classList.toggle("open", open);
   pageDimmer.classList.toggle("open", open);
   accountMenu.setAttribute("aria-hidden", String(!open));
@@ -733,6 +737,7 @@ signInForm.addEventListener("submit", async (event) => {
   const submitButton = signInForm.querySelector("button[type='submit']");
   const email = new FormData(signInForm).get("email").trim();
   submitButton.disabled = true;
+  accountMenu.classList.add("sign-in-feedback");
   setAccountStatus("Sending sign-in link...");
 
   const { error } = await supabaseClient.auth.signInWithOtp({

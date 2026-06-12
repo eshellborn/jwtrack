@@ -292,7 +292,8 @@ function setDone(id, done) {
 }
 
 function setAccountStatus(message, isError = false) {
-  accountStatus.textContent = message;
+  const normalizedMessage = message ? message.charAt(0).toUpperCase() + message.slice(1) : "";
+  accountStatus.textContent = normalizedMessage;
   accountStatus.classList.toggle("error", isError);
 }
 

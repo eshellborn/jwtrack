@@ -295,6 +295,7 @@ function setAccountStatus(message, isError = false) {
   const normalizedMessage = message ? message.charAt(0).toUpperCase() + message.slice(1) : "";
   accountStatus.textContent = normalizedMessage;
   accountStatus.classList.toggle("error", isError);
+  accountMenu.classList.toggle("has-status", Boolean(normalizedMessage));
 }
 
 function updateAccountUI() {

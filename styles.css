@@ -338,7 +338,7 @@ h1 {
 
 .account-status {
   display: grid;
-  min-height: 64px;
+  min-height: 88px;
   place-items: center;
   color: white;
   font-size: 0.9rem;

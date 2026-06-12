@@ -145,6 +145,18 @@ h1 {
   stroke-linecap: round;
 }
 
+.profile-button .close-icon {
+  display: none;
+}
+
+.profile-button[aria-expanded="true"] .profile-icon {
+  display: none;
+}
+
+.profile-button[aria-expanded="true"] .close-icon {
+  display: block;
+}
+
 .account.signed-in .profile-button::after {
   content: "";
   position: absolute;

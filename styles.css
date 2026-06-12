@@ -100,22 +100,99 @@ h1 {
 }
 
 .account {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.profile-button {
+  position: relative;
   display: grid;
-  justify-items: end;
-  gap: 7px;
-  min-width: min(100%, 330px);
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--muted);
+  box-shadow: 0 2px 8px rgba(31, 35, 38, 0.06);
+  transition:
+    border-color 160ms ease,
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.profile-button:hover,
+.profile-button[aria-expanded="true"] {
+  border-color: #bfc7cc;
+  background: #fbfbfa;
+  color: var(--ink);
+}
+
+.profile-button svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+
+.account.signed-in .profile-button::after {
+  content: "";
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--paper);
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.account-menu {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 9px);
+  right: 0;
+  width: min(320px, calc(100vw - 24px));
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel);
+  padding: 15px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transform-origin: top right;
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0, 0, 0.28, 1),
+    visibility 180ms ease;
+}
+
+.account-menu.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .sign-in-form,
 .account-session {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: grid;
+  gap: 10px;
+}
+
+.sign-in-form p {
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .sign-in-form input {
   min-width: 0;
-  width: 180px;
+  width: 100%;
   min-height: 38px;
   border: 1px solid var(--line);
   border-radius: 7px;
@@ -153,6 +230,16 @@ h1 {
   font-size: 0.86rem;
 }
 
+.account-label {
+  font-size: 0.76rem;
+}
+
+.account-session strong {
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
 .account-session button {
   border-color: var(--line);
   background: var(--panel);
@@ -160,9 +247,14 @@ h1 {
 }
 
 .account-status {
+  min-height: 0;
   color: var(--muted);
   font-size: 0.78rem;
-  text-align: right;
+  line-height: 1.35;
+}
+
+.account-status:empty {
+  display: none;
 }
 
 .account-status.error {
@@ -624,20 +716,7 @@ h3 a:hover {
   }
 
   .top {
-    display: grid;
-  }
-
-  .account {
-    justify-items: stretch;
-    min-width: 0;
-  }
-
-  .sign-in-form input {
-    width: 100%;
-  }
-
-  .account-status {
-    text-align: left;
+    align-items: flex-start;
   }
 
   .item-row {

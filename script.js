@@ -252,6 +252,9 @@ const state = {
 const listEl = document.querySelector("#itemList");
 const segmentsEl = document.querySelector(".segments");
 const markAllUnreadButton = document.querySelector("#markAllUnread");
+const accountEl = document.querySelector(".account");
+const profileButton = document.querySelector("#profileButton");
+const accountMenu = document.querySelector("#accountMenu");
 const signInForm = document.querySelector("#signInForm");
 const accountSession = document.querySelector("#accountSession");
 const accountEmail = document.querySelector("#accountEmail");
@@ -291,9 +294,17 @@ function setAccountStatus(message, isError = false) {
 
 function updateAccountUI() {
   const signedIn = Boolean(state.user);
+  accountEl.classList.toggle("signed-in", signedIn);
   signInForm.hidden = signedIn;
   accountSession.hidden = !signedIn;
   accountEmail.textContent = state.user?.email || "Signed in";
+}
+
+function setAccountMenuOpen(open) {
+  accountMenu.classList.toggle("open", open);
+  accountMenu.setAttribute("aria-hidden", String(!open));
+  profileButton.setAttribute("aria-expanded", String(open));
+  profileButton.setAttribute("aria-label", open ? "Close account menu" : "Open account menu");
 }
 
 async function syncProgressChange(itemId, done) {
@@ -356,7 +367,7 @@ async function applySession(session) {
   if (state.user) {
     await loadCloudProgress();
   } else {
-    setAccountStatus("Sign in to sync progress across devices.");
+    setAccountStatus("");
   }
 }
 
@@ -666,6 +677,22 @@ document.querySelector(".segments").addEventListener("click", (event) => {
   state.filter = button.dataset.filter;
   render();
   updateFilterIndicator();
+});
+
+profileButton.addEventListener("click", () => {
+  setAccountMenuOpen(profileButton.getAttribute("aria-expanded") !== "true");
+});
+
+document.addEventListener("click", (event) => {
+  if (!accountEl.contains(event.target)) {
+    setAccountMenuOpen(false);
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || profileButton.getAttribute("aria-expanded") !== "true") return;
+  setAccountMenuOpen(false);
+  profileButton.focus();
 });
 
 markAllUnreadButton.addEventListener("click", async () => {

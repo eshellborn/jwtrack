@@ -22,6 +22,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -53,7 +57,10 @@ a {
 }
 
 .top {
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
 }
 
 .brand {
@@ -78,6 +85,88 @@ h1 {
   font-weight: 600;
   letter-spacing: 0;
   line-height: 1.1;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.account {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+  min-width: min(100%, 330px);
+}
+
+.sign-in-form,
+.account-session {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sign-in-form input {
+  min-width: 0;
+  width: 180px;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel);
+  color: var(--ink);
+  padding: 0 11px;
+  font: inherit;
+}
+
+.sign-in-form input:focus {
+  outline: 2px solid rgba(47, 111, 145, 0.24);
+  outline-offset: 1px;
+  border-color: var(--blue);
+}
+
+.sign-in-form button,
+.account-session button {
+  min-height: 38px;
+  border: 1px solid var(--blue);
+  border-radius: 7px;
+  background: var(--blue);
+  color: white;
+  padding: 0 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.sign-in-form button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.account-session {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.account-session button {
+  border-color: var(--line);
+  background: var(--panel);
+  color: var(--muted);
+}
+
+.account-status {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+.account-status.error {
+  color: #a33b36;
 }
 
 .subtle {
@@ -532,6 +621,23 @@ h3 a:hover {
     width: min(100% - 24px, 1120px);
     padding-top: 22px;
     gap: 20px;
+  }
+
+  .top {
+    display: grid;
+  }
+
+  .account {
+    justify-items: stretch;
+    min-width: 0;
+  }
+
+  .sign-in-form input {
+    width: 100%;
+  }
+
+  .account-status {
+    text-align: left;
   }
 
   .item-row {

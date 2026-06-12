@@ -1,4 +1,9 @@
 const sourceUrl = "https://www.jw.org/en/whats-new/";
+const supabaseUrl = "https://fgikbmwjdentpumhdzeu.supabase.co";
+const supabasePublishableKey = "sb_publishable_bX9yx0-MyUjNY0TgpgeTTw_p4E1CFkq";
+const supabaseClient = typeof supabase === "undefined"
+  ? null
+  : supabase.createClient(supabaseUrl, supabasePublishableKey);
 const items = [
   {
     id: "pub-jwb-138-1-video",
@@ -240,12 +245,19 @@ const storageKey = "jw-whats-new-tracker-v5";
 const state = {
   filter: "all",
   progress: loadProgress(),
-  swipeStart: null
+  swipeStart: null,
+  user: null
 };
 
 const listEl = document.querySelector("#itemList");
 const segmentsEl = document.querySelector(".segments");
 const markAllUnreadButton = document.querySelector("#markAllUnread");
+const signInForm = document.querySelector("#signInForm");
+const accountSession = document.querySelector("#accountSession");
+const accountEmail = document.querySelector("#accountEmail");
+const accountStatus = document.querySelector("#accountStatus");
+const signOutButton = document.querySelector("#signOutButton");
+
 function loadProgress() {
   try {
     return JSON.parse(localStorage.getItem(storageKey)) || {};
@@ -269,6 +281,102 @@ function setDone(id, done) {
     delete state.progress[id];
   }
   saveProgress();
+  syncProgressChange(id, done);
+}
+
+function setAccountStatus(message, isError = false) {
+  accountStatus.textContent = message;
+  accountStatus.classList.toggle("error", isError);
+}
+
+function updateAccountUI() {
+  const signedIn = Boolean(state.user);
+  signInForm.hidden = signedIn;
+  accountSession.hidden = !signedIn;
+  accountEmail.textContent = state.user?.email || "Signed in";
+}
+
+async function syncProgressChange(itemId, done) {
+  if (!supabaseClient || !state.user) return;
+
+  setAccountStatus("Syncing...");
+  const request = done
+    ? supabaseClient.from("user_progress").upsert({ user_id: state.user.id, item_id: itemId })
+    : supabaseClient
+        .from("user_progress")
+        .delete()
+        .eq("user_id", state.user.id)
+        .eq("item_id", itemId);
+  const { error } = await request;
+
+  if (error) {
+    setAccountStatus(`Saved on this device, but sync failed: ${error.message}`, true);
+    return;
+  }
+  setAccountStatus("Progress synced.");
+}
+
+async function loadCloudProgress() {
+  if (!supabaseClient || !state.user) return;
+
+  setAccountStatus("Syncing progress...");
+  const localIds = Object.keys(state.progress).filter((id) => state.progress[id]);
+  const { data, error } = await supabaseClient
+    .from("user_progress")
+    .select("item_id")
+    .eq("user_id", state.user.id);
+
+  if (error) {
+    setAccountStatus(`Signed in, but progress sync failed: ${error.message}`, true);
+    return;
+  }
+
+  const cloudIds = (data || []).map((row) => row.item_id);
+  const mergedIds = [...new Set([...cloudIds, ...localIds])];
+  state.progress = Object.fromEntries(mergedIds.map((id) => [id, true]));
+  saveProgress();
+  render();
+
+  const missingCloudIds = localIds.filter((id) => !cloudIds.includes(id));
+  if (missingCloudIds.length) {
+    const rows = missingCloudIds.map((itemId) => ({ user_id: state.user.id, item_id: itemId }));
+    const { error: migrationError } = await supabaseClient.from("user_progress").upsert(rows);
+    if (migrationError) {
+      setAccountStatus(`Signed in, but local progress could not be uploaded: ${migrationError.message}`, true);
+      return;
+    }
+  }
+
+  setAccountStatus("Progress synced across devices.");
+}
+
+async function applySession(session) {
+  state.user = session?.user || null;
+  updateAccountUI();
+  if (state.user) {
+    await loadCloudProgress();
+  } else {
+    setAccountStatus("Sign in to sync progress across devices.");
+  }
+}
+
+async function initializeAuth() {
+  if (!supabaseClient) {
+    setAccountStatus("Cloud sync could not load. Local progress is still available.", true);
+    return;
+  }
+
+  const { data, error } = await supabaseClient.auth.getSession();
+  if (error) {
+    setAccountStatus(`Could not restore sign-in: ${error.message}`, true);
+  } else {
+    await applySession(data.session);
+  }
+
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === "INITIAL_SESSION") return;
+    window.setTimeout(() => applySession(session), 0);
+  });
 }
 
 function formatDate(value) {
@@ -560,7 +668,55 @@ document.querySelector(".segments").addEventListener("click", (event) => {
   updateFilterIndicator();
 });
 
-markAllUnreadButton.addEventListener("click", () => {
+markAllUnreadButton.addEventListener("click", async () => {
+  state.progress = {};
+  saveProgress();
+  render();
+
+  if (supabaseClient && state.user) {
+    setAccountStatus("Syncing...");
+    const { error } = await supabaseClient
+      .from("user_progress")
+      .delete()
+      .eq("user_id", state.user.id);
+    setAccountStatus(
+      error ? `Cleared on this device, but sync failed: ${error.message}` : "Progress synced.",
+      Boolean(error)
+    );
+  }
+});
+
+signInForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!supabaseClient) return;
+
+  const submitButton = signInForm.querySelector("button[type='submit']");
+  const email = new FormData(signInForm).get("email").trim();
+  submitButton.disabled = true;
+  setAccountStatus("Sending sign-in link...");
+
+  const { error } = await supabaseClient.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${window.location.origin}${window.location.pathname}`
+    }
+  });
+
+  submitButton.disabled = false;
+  setAccountStatus(
+    error ? error.message : "Check your email for the sign-in link.",
+    Boolean(error)
+  );
+});
+
+signOutButton.addEventListener("click", async () => {
+  if (!supabaseClient) return;
+  setAccountStatus("Signing out...");
+  const { error } = await supabaseClient.auth.signOut();
+  if (error) {
+    setAccountStatus(error.message, true);
+    return;
+  }
   state.progress = {};
   saveProgress();
   render();
@@ -618,3 +774,4 @@ listEl.addEventListener("pointercancel", () => {
 });
 
 render();
+initializeAuth();

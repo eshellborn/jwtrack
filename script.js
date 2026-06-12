@@ -241,8 +241,8 @@ const items = [
   }
 ];
 
-const storageKey = "jw-whats-new-tracker-v7";
-const defaultProgress = Object.fromEntries(items.map((item) => [item.id, true]));
+const storageKey = "jw-whats-new-tracker-v8";
+const defaultProgress = {};
 const state = {
   filter: "all",
   progress: loadProgress(),

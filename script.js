@@ -255,6 +255,7 @@ const markAllUnreadButton = document.querySelector("#markAllUnread");
 const accountEl = document.querySelector(".account");
 const profileButton = document.querySelector("#profileButton");
 const accountMenu = document.querySelector("#accountMenu");
+const sheetCloseButton = document.querySelector("#sheetCloseButton");
 const signInForm = document.querySelector("#signInForm");
 const accountSession = document.querySelector("#accountSession");
 const accountEmail = document.querySelector("#accountEmail");
@@ -681,6 +682,11 @@ document.querySelector(".segments").addEventListener("click", (event) => {
 
 profileButton.addEventListener("click", () => {
   setAccountMenuOpen(profileButton.getAttribute("aria-expanded") !== "true");
+});
+
+sheetCloseButton.addEventListener("click", () => {
+  setAccountMenuOpen(false);
+  profileButton.focus();
 });
 
 document.addEventListener("click", (event) => {

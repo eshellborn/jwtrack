@@ -131,9 +131,8 @@ h1 {
 }
 
 .profile-button[aria-expanded="true"] {
-  border-color: rgba(255, 255, 255, 0.75);
-  background: rgba(255, 255, 255, 0.14);
-  color: white;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .profile-button svg {
@@ -143,18 +142,6 @@ h1 {
   stroke: currentColor;
   stroke-width: 1.7;
   stroke-linecap: round;
-}
-
-.profile-button .close-icon {
-  display: none;
-}
-
-.profile-button[aria-expanded="true"] .profile-icon {
-  display: none;
-}
-
-.profile-button[aria-expanded="true"] .close-icon {
-  display: block;
 }
 
 .account.signed-in .profile-button::after {
@@ -198,6 +185,34 @@ h1 {
   visibility: visible;
   pointer-events: auto;
   transform: translateY(0);
+}
+
+.sheet-close-button {
+  position: absolute;
+  top: 20px;
+  right: max(16px, calc((100vw - 1120px) / 2));
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  transition: background-color 160ms ease;
+}
+
+.sheet-close-button:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.sheet-close-button svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
 }
 
 .sign-in-form,
@@ -753,6 +768,11 @@ h3 a:hover {
     right: auto;
     left: 0;
     padding: 76px 16px 20px;
+  }
+
+  .sheet-close-button {
+    top: 18px;
+    right: 12px;
   }
 
   .sign-in-form,

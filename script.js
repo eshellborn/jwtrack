@@ -241,7 +241,8 @@ const items = [
   }
 ];
 
-const storageKey = "jw-whats-new-tracker-v5";
+const storageKey = "jw-whats-new-tracker-v7";
+const defaultProgress = Object.fromEntries(items.map((item) => [item.id, true]));
 const state = {
   filter: "all",
   progress: loadProgress(),
@@ -255,6 +256,7 @@ const markAllUnreadButton = document.querySelector("#markAllUnread");
 const accountEl = document.querySelector(".account");
 const profileButton = document.querySelector("#profileButton");
 const accountMenu = document.querySelector("#accountMenu");
+const pageDimmer = document.querySelector("#pageDimmer");
 const sheetCloseButton = document.querySelector("#sheetCloseButton");
 const signInForm = document.querySelector("#signInForm");
 const accountSession = document.querySelector("#accountSession");
@@ -264,9 +266,10 @@ const signOutButton = document.querySelector("#signOutButton");
 
 function loadProgress() {
   try {
-    return JSON.parse(localStorage.getItem(storageKey)) || {};
+    const savedProgress = localStorage.getItem(storageKey);
+    return savedProgress === null ? { ...defaultProgress } : JSON.parse(savedProgress) || {};
   } catch {
-    return {};
+    return { ...defaultProgress };
   }
 }
 
@@ -303,6 +306,7 @@ function updateAccountUI() {
 
 function setAccountMenuOpen(open) {
   accountMenu.classList.toggle("open", open);
+  pageDimmer.classList.toggle("open", open);
   accountMenu.setAttribute("aria-hidden", String(!open));
   profileButton.setAttribute("aria-expanded", String(open));
   profileButton.setAttribute("aria-label", open ? "Close account menu" : "Open account menu");
@@ -487,7 +491,10 @@ function animateStatNumber(element, nextValue) {
 
 function renderList(visible) {
   if (!visible.length) {
-    listEl.innerHTML = `<div class="empty">No items match this filter.</div>`;
+    const allCaughtUp = state.filter === "unread";
+    listEl.innerHTML = `<div class="empty ${allCaughtUp ? "all-caught-up" : ""}">${
+      allCaughtUp ? "All caught up!" : "No items match this filter."
+    }</div>`;
     return;
   }
 

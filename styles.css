@@ -59,9 +59,10 @@ a {
 .top {
   position: relative;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 24px;
+  margin-bottom: 10px;
 }
 
 .brand {
@@ -81,7 +82,7 @@ p {
 }
 
 h1 {
-  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  font-size: clamp(1.35rem, 3vw, 1.5rem);
   font-family: "Inter", "Avenir Next", sans-serif;
   font-weight: 600;
   letter-spacing: 0;
@@ -107,7 +108,7 @@ h1 {
 
 .profile-button {
   position: relative;
-  z-index: 21;
+  z-index: 19;
   display: grid;
   width: 42px;
   height: 42px;
@@ -130,9 +131,8 @@ h1 {
   color: var(--ink);
 }
 
-.profile-button[aria-expanded="true"] {
-  opacity: 0;
-  pointer-events: none;
+.profile-button:focus {
+  outline: none;
 }
 
 .profile-button svg {
@@ -156,54 +156,78 @@ h1 {
   background: var(--green);
 }
 
+.page-dimmer {
+  position: fixed;
+  z-index: 18;
+  inset: 0;
+  background: rgba(247, 247, 244, 0.56);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 300ms ease,
+    visibility 0s linear 420ms;
+}
+
+.page-dimmer.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity 300ms ease,
+    visibility 0s linear;
+}
+
 .account-menu {
   position: fixed;
   z-index: 20;
   top: 0;
   left: 0;
+  display: grid;
+  align-content: center;
   width: 100vw;
-  min-height: 112px;
+  min-height: 240px;
   border: 0;
   border-radius: 0;
   background: var(--blue);
   color: white;
-  padding: 76px max(16px, calc((100vw - 1120px) / 2)) 28px;
-  box-shadow: 0 10px 28px rgba(31, 35, 38, 0.18);
-  opacity: 0;
+  padding: 64px max(16px, calc((100vw - 1120px) / 2));
+  box-shadow: 0 18px 42px rgba(31, 35, 38, 0.32);
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(-100%);
+  transform: translateY(calc(-100% - 48px));
   transform-origin: top center;
   transition:
-    opacity 220ms ease,
-    transform 320ms cubic-bezier(0, 0, 0.28, 1),
-    visibility 220ms ease;
+    transform 420ms cubic-bezier(0.65, 0, 0.35, 1),
+    visibility 0s linear 420ms;
 }
 
 .account-menu.open {
-  opacity: 1;
   visibility: visible;
   pointer-events: auto;
   transform: translateY(0);
+  transition:
+    transform 420ms cubic-bezier(0.65, 0, 0.35, 1),
+    visibility 0s linear;
 }
 
 .sheet-close-button {
   position: absolute;
-  top: 20px;
+  top: 34px;
   right: max(16px, calc((100vw - 1120px) / 2));
   display: grid;
   width: 42px;
   height: 42px;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
+  border: 0;
+  background: transparent;
   color: white;
-  transition: background-color 160ms ease;
+  padding: 0;
+  transition: opacity 160ms ease;
 }
 
 .sheet-close-button:hover {
-  background: rgba(255, 255, 255, 0.22);
+  opacity: 0.72;
 }
 
 .sheet-close-button svg {
@@ -225,6 +249,8 @@ h1 {
 .sign-in-form {
   grid-template-columns: minmax(240px, 320px) auto;
   justify-content: center;
+  column-gap: 12px;
+  row-gap: 28px;
 }
 
 .sign-in-form p {
@@ -244,7 +270,8 @@ h1 {
   background: var(--panel);
   color: var(--ink);
   padding: 0 11px;
-  font: inherit;
+  font-family: inherit;
+  font-size: 0.84rem;
 }
 
 .sign-in-form input:focus {
@@ -254,10 +281,11 @@ h1 {
 }
 
 .sign-in-form button {
+  min-width: 112px;
   min-height: 38px;
-  border: 1px solid #34383c;
+  border: 1px solid #24272a;
   border-radius: 7px;
-  background: #34383c;
+  background: #24272a;
   color: white;
   padding: 0 12px;
   font-size: 0.84rem;
@@ -265,7 +293,8 @@ h1 {
 }
 
 .sign-in-form button:hover {
-  background: #24272a;
+  border-color: transparent;
+  background: #17191b;
 }
 
 .account-session button {
@@ -708,6 +737,33 @@ h3 a:hover {
   text-align: center;
 }
 
+.empty.all-caught-up {
+  border-style: solid;
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue);
+  padding-block: 42px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  animation: caughtUpEnter 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes caughtUpEnter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empty.all-caught-up {
+    animation: none;
+  }
+}
+
 @keyframes contentShrink {
   0% {
     transform: scale(1);
@@ -768,6 +824,21 @@ h3 a:hover {
   }
 }
 
+@media (max-width: 680px) {
+  .sign-in-form {
+    grid-template-columns: minmax(0, 358px);
+    row-gap: 12px;
+  }
+
+  .sign-in-form p {
+    margin-bottom: 16px;
+  }
+
+  .sign-in-form button {
+    min-width: 0;
+  }
+}
+
 @media (max-width: 560px) {
   .shell {
     width: min(100% - 24px, 1120px);
@@ -775,24 +846,19 @@ h3 a:hover {
     gap: 20px;
   }
 
-  .top {
-    align-items: flex-start;
-  }
-
   .account-menu {
     width: 100vw;
-    min-height: 0;
+    min-height: 260px;
     right: auto;
     left: 0;
-    padding: 76px 16px 20px;
+    padding: 64px 16px;
   }
 
   .sheet-close-button {
-    top: 18px;
+    top: 22px;
     right: 12px;
   }
 
-  .sign-in-form,
   .account-session {
     grid-template-columns: 1fr;
   }

@@ -842,6 +842,11 @@ h3 a:hover {
 }
 
 @media (max-width: 680px) {
+  .account-menu {
+    height: 328px;
+    padding-block: 57px;
+  }
+
   .sign-in-form {
     grid-template-columns: minmax(0, 358px);
     row-gap: 12px;
@@ -869,10 +874,9 @@ h3 a:hover {
 
   .account-menu {
     width: 100vw;
-    height: 328px;
     right: auto;
     left: 0;
-    padding: 57px 16px;
+    padding-inline: 16px;
   }
 
   .sheet-close-button {

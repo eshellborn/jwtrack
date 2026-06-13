@@ -4,6 +4,8 @@ const supabasePublishableKey = "sb_publishable_bX9yx0-MyUjNY0TgpgeTTw_p4E1CFkq";
 const supabaseClient = typeof supabase === "undefined"
   ? null
   : supabase.createClient(supabaseUrl, supabasePublishableKey);
+const isLocalAuthPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname)
+  && new URLSearchParams(window.location.search).get("preview") === "signed-in";
 const items = [
   {
     id: "pub-jwb-138-1-video",
@@ -244,10 +246,12 @@ const items = [
 const storageKey = "jw-whats-new-tracker-v8";
 const defaultProgress = {};
 const state = {
-  filter: "all",
+  filter: "unread",
   progress: loadProgress(),
   swipeStart: null,
-  user: null
+  user: null,
+  isAuthPreview: isLocalAuthPreview,
+  isSigningOut: false
 };
 
 const listEl = document.querySelector("#itemList");
@@ -314,8 +318,33 @@ function setAccountMenuOpen(open) {
   profileButton.setAttribute("aria-label", open ? "Close account menu" : "Open account menu");
 }
 
+function closeAccountMenuAfterAnimation() {
+  if (!accountMenu.classList.contains("open")) {
+    setAccountMenuOpen(false);
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      accountMenu.removeEventListener("transitionend", handleTransitionEnd);
+      window.clearTimeout(fallbackTimer);
+      resolve();
+    };
+    const handleTransitionEnd = (event) => {
+      if (event.target === accountMenu && event.propertyName === "transform") finish();
+    };
+    const fallbackTimer = window.setTimeout(finish, 500);
+
+    accountMenu.addEventListener("transitionend", handleTransitionEnd);
+    setAccountMenuOpen(false);
+  });
+}
+
 async function syncProgressChange(itemId, done) {
-  if (!supabaseClient || !state.user) return;
+  if (!supabaseClient || !state.user || state.isAuthPreview) return;
 
   setAccountStatus("Syncing...");
   const request = done
@@ -331,7 +360,7 @@ async function syncProgressChange(itemId, done) {
     setAccountStatus(`Saved on this device, but sync failed: ${error.message}`, true);
     return;
   }
-  setAccountStatus("Progress synced.");
+  setAccountStatus("");
 }
 
 async function loadCloudProgress() {
@@ -365,10 +394,12 @@ async function loadCloudProgress() {
     }
   }
 
-  setAccountStatus("Progress synced across devices.");
+  setAccountStatus("");
 }
 
 async function applySession(session) {
+  if (!session && state.isSigningOut) return;
+
   state.user = session?.user || null;
   updateAccountUI();
   if (state.user) {
@@ -379,6 +410,13 @@ async function applySession(session) {
 }
 
 async function initializeAuth() {
+  if (state.isAuthPreview) {
+    state.user = { id: "local-preview-user", email: "preview@example.com" };
+    updateAccountUI();
+    setAccountStatus("");
+    return;
+  }
+
   if (!supabaseClient) {
     setAccountStatus("Cloud sync could not load. Local progress is still available.", true);
     return;
@@ -715,14 +753,14 @@ markAllUnreadButton.addEventListener("click", async () => {
   saveProgress();
   render();
 
-  if (supabaseClient && state.user) {
+  if (supabaseClient && state.user && !state.isAuthPreview) {
     setAccountStatus("Syncing...");
     const { error } = await supabaseClient
       .from("user_progress")
       .delete()
       .eq("user_id", state.user.id);
     setAccountStatus(
-      error ? `Cleared on this device, but sync failed: ${error.message}` : "Progress synced.",
+      error ? `Cleared on this device, but sync failed: ${error.message}` : "",
       Boolean(error)
     );
   }
@@ -752,16 +790,38 @@ signInForm.addEventListener("submit", async (event) => {
 });
 
 signOutButton.addEventListener("click", async () => {
-  if (!supabaseClient) return;
+  state.isSigningOut = true;
+
+  if (state.isAuthPreview) {
+    await closeAccountMenuAfterAnimation();
+    state.user = null;
+    updateAccountUI();
+    setAccountStatus("");
+    state.isSigningOut = false;
+    profileButton.focus();
+    return;
+  }
+
+  if (!supabaseClient) {
+    state.isSigningOut = false;
+    return;
+  }
   setAccountStatus("Signing out...");
   const { error } = await supabaseClient.auth.signOut();
   if (error) {
+    state.isSigningOut = false;
     setAccountStatus(error.message, true);
     return;
   }
+  await closeAccountMenuAfterAnimation();
+  state.user = null;
+  updateAccountUI();
+  setAccountStatus("");
   state.progress = {};
   saveProgress();
   render();
+  state.isSigningOut = false;
+  profileButton.focus();
 });
 
 window.addEventListener("resize", () => {

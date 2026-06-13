@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=61" />
+    <link rel="stylesheet" href="styles.css?v=79" />
   </head>
   <body>
     <div class="page-dimmer" id="pageDimmer" aria-hidden="true"></div>
@@ -52,8 +52,7 @@
                 <button type="submit">Submit</button>
               </form>
               <div class="account-session" id="accountSession" hidden>
-                <span class="account-label">Signed in as</span>
-                <strong id="accountEmail"></strong>
+                <p class="account-identity">Signed in as <strong id="accountEmail"></strong></p>
                 <button id="signOutButton" type="button">Sign out</button>
               </div>
               <p class="account-status" id="accountStatus" aria-live="polite"></p>
@@ -69,10 +68,10 @@
 
       <section class="toolbar" aria-label="Filters">
         <div class="segments" role="group" aria-label="List filter">
-          <button class="active" data-filter="all" type="button">All</button>
+          <button data-filter="all" type="button">All</button>
           <button data-filter="articles" type="button">Articles</button>
           <button data-filter="videos" type="button">Videos</button>
-          <button data-filter="unread" type="button">Unread</button>
+          <button class="active" data-filter="unread" type="button">Unread</button>
         </div>
         <button class="reset-button" id="markAllUnread" type="button">Mark all as unread</button>
       </section>
@@ -81,6 +80,6 @@
     </main>
 
     <script src="supabase.js"></script>
-    <script src="script.js?v=61"></script>
+    <script src="script.js?v=79"></script>
   </body>
 </html>

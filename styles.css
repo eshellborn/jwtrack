@@ -82,6 +82,7 @@ p {
 }
 
 h1 {
+  color: var(--blue);
   font-size: clamp(1.35rem, 3vw, 1.5rem);
   font-family: "Inter", "Avenir Next", sans-serif;
   font-weight: 600;
@@ -131,6 +132,13 @@ h1 {
   color: var(--ink);
 }
 
+.account.signed-in .profile-button,
+.account.signed-in .profile-button:hover,
+.account.signed-in .profile-button[aria-expanded="true"] {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
 .profile-button:focus {
   outline: none;
 }
@@ -142,18 +150,6 @@ h1 {
   stroke: currentColor;
   stroke-width: 1.7;
   stroke-linecap: round;
-}
-
-.account.signed-in .profile-button::after {
-  content: "";
-  position: absolute;
-  right: 1px;
-  bottom: 1px;
-  width: 9px;
-  height: 9px;
-  border: 2px solid var(--paper);
-  border-radius: 50%;
-  background: var(--green);
 }
 
 .page-dimmer {
@@ -320,13 +316,15 @@ h1 {
 }
 
 .account-session {
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  justify-items: center;
+  gap: 24px;
   color: rgba(255, 255, 255, 0.78);
   font-size: 0.86rem;
+  text-align: center;
 }
 
-.account-label {
-  font-size: 0.76rem;
+.account-identity {
+  line-height: 1.4;
 }
 
 .account-session strong {
@@ -843,8 +841,12 @@ h3 a:hover {
 
 @media (max-width: 680px) {
   .account-menu {
-    height: 240px;
+    height: 280px;
     padding-block: 38px;
+  }
+
+  .account.signed-in .account-menu {
+    height: 230px;
   }
 
   .sign-in-form {
@@ -876,16 +878,12 @@ h3 a:hover {
     width: 100vw;
     right: auto;
     left: 0;
-    padding-inline: 16px;
+    padding-inline: 24px;
   }
 
   .sheet-close-button {
     top: 22px;
     right: 12px;
-  }
-
-  .account-session {
-    grid-template-columns: 1fr;
   }
 
   .item-row {

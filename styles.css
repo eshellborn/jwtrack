@@ -843,7 +843,7 @@ h3 a:hover {
 
 @media (max-width: 680px) {
   .account-menu {
-    height: 290px;
+    height: 240px;
     padding-block: 38px;
   }
 

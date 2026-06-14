@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=83" />
+    <link rel="stylesheet" href="styles.css?v=84" />
   </head>
   <body>
     <div class="page-dimmer" id="pageDimmer" aria-hidden="true"></div>
@@ -53,6 +53,14 @@
               </form>
               <div class="account-session" id="accountSession" hidden>
                 <p class="account-identity">Signed in as <strong id="accountEmail"></strong></p>
+                <label class="notification-preference" for="emailNotifications">
+                  <span>
+                    <strong>Email notifications</strong>
+                    <small>Get an email when new items are added.</small>
+                  </span>
+                  <input id="emailNotifications" type="checkbox" role="switch" />
+                  <span class="toggle" aria-hidden="true"></span>
+                </label>
                 <button id="signOutButton" type="button">Sign out</button>
               </div>
               <p class="account-status" id="accountStatus" aria-live="polite"></p>
@@ -80,6 +88,6 @@
     </main>
 
     <script src="supabase.js"></script>
-    <script src="script.js?v=83"></script>
+    <script src="script.js?v=84"></script>
   </body>
 </html>

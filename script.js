@@ -17,6 +17,7 @@ const state = {
   contentError: "",
   swipeStart: null,
   user: null,
+  emailNotifications: false,
   isAuthPreview: isLocalAuthPreview,
   isSigningOut: false
 };
@@ -34,6 +35,7 @@ const accountSession = document.querySelector("#accountSession");
 const accountEmail = document.querySelector("#accountEmail");
 const accountStatus = document.querySelector("#accountStatus");
 const signOutButton = document.querySelector("#signOutButton");
+const emailNotifications = document.querySelector("#emailNotifications");
 
 function normalizeContentItem(row) {
   const type = row?.type === "video" ? "video" : row?.type === "article" ? "article" : null;
@@ -153,6 +155,46 @@ function updateAccountUI() {
   signInForm.hidden = signedIn;
   accountSession.hidden = !signedIn;
   accountEmail.textContent = state.user?.email || "Signed in";
+  emailNotifications.checked = state.emailNotifications;
+}
+
+async function loadNotificationPreference() {
+  if (!supabaseClient || !state.user || state.isAuthPreview) return;
+
+  const { data, error } = await supabaseClient
+    .from("notification_preferences")
+    .select("enabled")
+    .eq("user_id", state.user.id)
+    .maybeSingle();
+
+  if (error) {
+    setAccountStatus(`Could not load email preference: ${error.message}`, true);
+    return;
+  }
+
+  state.emailNotifications = Boolean(data?.enabled);
+  updateAccountUI();
+}
+
+async function saveNotificationPreference(enabled) {
+  if (!supabaseClient || !state.user || state.isAuthPreview) return;
+
+  emailNotifications.disabled = true;
+  setAccountStatus("Saving email preference...");
+  const { error } = await supabaseClient.from("notification_preferences").upsert({
+    user_id: state.user.id,
+    enabled
+  });
+  emailNotifications.disabled = false;
+
+  if (error) {
+    state.emailNotifications = !enabled;
+    updateAccountUI();
+    setAccountStatus(`Could not save email preference: ${error.message}`, true);
+    return;
+  }
+
+  setAccountStatus(enabled ? "Email notifications enabled." : "Email notifications disabled.");
 }
 
 function setAccountMenuOpen(open) {
@@ -248,8 +290,10 @@ async function applySession(session) {
   state.user = session?.user || null;
   updateAccountUI();
   if (state.user) {
-    await loadCloudProgress();
+    await Promise.all([loadCloudProgress(), loadNotificationPreference()]);
   } else {
+    state.emailNotifications = false;
+    updateAccountUI();
     setAccountStatus("");
   }
 }
@@ -682,6 +726,11 @@ signOutButton.addEventListener("click", async () => {
   render();
   state.isSigningOut = false;
   profileButton.focus();
+});
+
+emailNotifications.addEventListener("change", () => {
+  state.emailNotifications = emailNotifications.checked;
+  saveNotificationPreference(state.emailNotifications);
 });
 
 window.addEventListener("resize", () => {

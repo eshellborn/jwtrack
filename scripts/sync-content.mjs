@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const sourceUrl = "https://www.jw.org/en/whats-new/";
+const videoFeedUrl = "https://b.jw-cdn.org/apis/mediator/v1/categories/E/LatestVideos?detailed=1&clientType=www";
 const defaultSupabaseUrl = "https://fgikbmwjdentpumhdzeu.supabase.co";
 const minimumArticleCount = 10;
 const minimumVideoCount = 3;
@@ -110,6 +111,29 @@ export function parseWhatsNew(html) {
   });
 
   return { articles, videos: [...videosById.values()] };
+}
+
+export function parseLatestVideos(data) {
+  const media = Array.isArray(data?.category?.media) ? data.category.media : [];
+  return media.map((video, index) => {
+    const title = cleanText(video.title);
+    const lank = cleanText(video.languageAgnosticNaturalKey);
+    const publicationDate = cleanText(video.firstPublished).slice(0, 10);
+    if (!title || !lank || !/^\d{4}-\d{2}-\d{2}$/.test(publicationDate)) return null;
+
+    const url = `https://www.jw.org/finder?locale=en&lank=${encodeURIComponent(lank)}&docid=1011214&applanguage=E`;
+    return {
+      id: videoIdFromUrl(url),
+      publication_date: publicationDate,
+      category: inferVideoCategory(title),
+      title,
+      description: cleanText(video.durationFormattedHHMM || video.durationFormattedMinSec),
+      type: "video",
+      url,
+      published: true,
+      sort_order: index
+    };
+  }).filter(Boolean);
 }
 
 function validateCatalog({ articles, videos }) {
@@ -242,13 +266,23 @@ async function fetchSource() {
   return response.text();
 }
 
+async function fetchLatestVideos() {
+  const response = await fetch(videoFeedUrl, {
+    headers: { Accept: "application/json", "User-Agent": "JWTrack/1.0" }
+  });
+  if (!response.ok) throw new Error(`JW.org video request failed (${response.status}).`);
+  return response.json();
+}
+
 async function main() {
   const dryRun = process.argv.includes("--dry-run");
   const supabaseUrl = process.env.SUPABASE_URL || defaultSupabaseUrl;
   const secretKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!secretKey) throw new Error("SUPABASE_SECRET_KEY is required.");
 
-  const catalog = parseWhatsNew(await fetchSource());
+  const [html, videoData] = await Promise.all([fetchSource(), fetchLatestVideos()]);
+  const catalog = parseWhatsNew(html);
+  catalog.videos = parseLatestVideos(videoData);
   validateCatalog(catalog);
   const existingItems = await loadExistingItems(supabaseUrl, secretKey);
   const scrapedItems = resolveStableIds([...catalog.videos, ...catalog.articles], existingItems);

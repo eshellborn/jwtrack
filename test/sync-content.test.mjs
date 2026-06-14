@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseWhatsNew } from "../scripts/sync-content.mjs";
+import { parseLatestVideos, parseWhatsNew } from "../scripts/sync-content.mjs";
 
 test("parses videos and articles while preferring a duplicate video", () => {
   const html = `
@@ -32,4 +32,22 @@ test("parses videos and articles while preferring a duplicate video", () => {
   assert.equal(result.articles.length, 1);
   assert.equal(result.articles[0].id, "docid-456-article");
   assert.equal(result.articles[0].category, "Life Stories");
+});
+
+test("parses the JW.org latest-videos feed", () => {
+  const result = parseLatestVideos({
+    category: {
+      media: [{
+        languageAgnosticNaturalKey: "docid-123_1_VIDEO",
+        title: "Was It Designed? Example",
+        firstPublished: "2026-06-14T10:30:00Z",
+        durationFormattedHHMM: "3:21"
+      }]
+    }
+  });
+
+  assert.equal(result.length, 1);
+  assert.equal(result[0].id, "docid-123-1-video");
+  assert.equal(result[0].publication_date, "2026-06-14");
+  assert.equal(result[0].description, "3:21");
 });

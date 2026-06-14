@@ -698,6 +698,10 @@ h3 a:hover {
   color: var(--blue);
 }
 
+.item-video h3 a:hover {
+  color: var(--video);
+}
+
 .desc {
   color: var(--muted);
   line-height: 1.45;

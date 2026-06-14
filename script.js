@@ -6,248 +6,15 @@ const supabaseClient = typeof supabase === "undefined"
   : supabase.createClient(supabaseUrl, supabasePublishableKey);
 const isLocalAuthPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname)
   && new URLSearchParams(window.location.search).get("preview") === "signed-in";
-const items = [
-  {
-    id: "pub-jwb-138-1-video",
-    date: "2026-06-01",
-    category: "JW Broadcasting",
-    title: "JW Broadcasting—June 2026: 159th Gilead Graduation",
-    description: "1h 32m 23s",
-    type: "video",
-    url: "https://www.jw.org/en/library/videos/#en/mediaitems/StudioMonthlyPrograms/pub-jwb-138_1_VIDEO"
-  },
-  {
-    id: "pub-jwbvod26-21-video",
-    date: "2026-05-29",
-    category: "Morning Worship",
-    title: "David H. Splane: Faith Without Works Is Dead (Jas. 2:17)",
-    description: "8m 45s",
-    type: "video",
-    url: "https://www.jw.org/en/library/videos/#en/mediaitems/VODPgmEvtMorningWorship/pub-jwbvod26_21_VIDEO"
-  },
-  {
-    id: "pub-jwbvod26-23-video",
-    date: "2026-05-29",
-    category: "Morning Worship",
-    title: "Harold Corkern: Jehovah Provides True Wisdom (Ps. 19:7)",
-    description: "10m 32s",
-    type: "video",
-    url: "https://www.jw.org/en/library/videos/#en/mediaitems/VODPgmEvtMorningWorship/pub-jwbvod26_23_VIDEO"
-  },
-  {
-    id: "pub-jwbvod26-19-video",
-    date: "2026-05-22",
-    category: "Morning Worship",
-    title: "Joel Dellinger: Be a True Friend Like Jonathan (1 Sam. 18:1)",
-    description: "10m 17s",
-    type: "video",
-    url: "https://www.jw.org/en/library/videos/#en/mediaitems/VODPgmEvtMorningWorship/pub-jwbvod26_19_VIDEO"
-  },
-  {
-    id: "pub-jwbvod26-20-video",
-    date: "2026-05-22",
-    category: "Morning Worship",
-    title: "Izak Marais: Jehovah Gives Us the Desire and Power to Act (Phil. 2:13)",
-    description: "10m 12s",
-    type: "video",
-    url: "https://www.jw.org/en/library/videos/#en/mediaitems/VODPgmEvtMorningWorship/pub-jwbvod26_20_VIDEO"
-  },
-  {
-    id: "pub-mwbv-202605-1-video",
-    date: "2026-05-11",
-    category: "Relief Work",
-    title: "Disaster Preparedness—Expect the Unexpected",
-    description: "4m 51s",
-    type: "video",
-    url: "https://www.jw.org/en/library/videos/#en/mediaitems/VODActivitiesReliefWork/pub-mwbv_202605_1_VIDEO"
-  },
-  {
-    id: "2026-06-09-convinced-love-support",
-    date: "2026-06-09",
-    category: "News Releases",
-    title: "UPDATE - BROTHER FINED | Convinced of Jehovah's Love and Support",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-06-09-pray-unbreakable",
-    date: "2026-06-09",
-    category: "News Releases",
-    title: "BROTHER IMPRISONED | 'I Pray to Be Unbreakable'",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-06-08-seven-brothers-ukraine",
-    date: "2026-06-08",
-    category: "News Releases",
-    title: "Seven More Brothers Imprisoned as Conscientious Objectors in Ukraine",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-06-04-after-each-trial",
-    date: "2026-06-04",
-    category: "News Releases",
-    title: "After Each Trial, Blessings Have Come",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-06-03-bible-books-may",
-    date: "2026-06-03",
-    category: "News Releases",
-    title: "Bible Books Released in Three Languages During May 2026",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-06-02-four-brothers-russia",
-    date: "2026-06-02",
-    category: "News Releases",
-    title: "Four Brothers Released in Russia",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-06-01-world-peace",
-    date: "2026-06-01",
-    category: "The Watchtower",
-    title: "Is World Peace Possible?",
-    description: "World peace is assured, and the Bible's solution will surprise you!",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-05-27-oleg-postnikov",
-    date: "2026-05-27",
-    category: "News Releases",
-    title: "UPDATE - CONVICTION OVERTURNED | Oleg Postnikov Convicted for a Second Time - Sentenced to Over Six Years in Prison",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-05-25-ebola-congo",
-    date: "2026-05-25",
-    category: "News Releases",
-    title: "Ebola Outbreak Threatens Millions in the Democratic Republic of the Congo",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-05-22-he-will-answer",
-    date: "2026-05-22",
-    category: "News Releases",
-    title: "BROTHERS IMPRISONED | He Will Answer",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-05-19-serving-gives-meaning",
-    date: "2026-05-19",
-    category: "News Releases",
-    title: "BROTHER IMPRISONED | Serving Jehovah Gives Meaning to Life",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-05-19-stephane-landeroin",
-    date: "2026-05-19",
-    category: "The Watchtower - Study Edition",
-    title: "Stephane Landeroin: My Grand Creator Noticed Me",
-    description: "Find out what Stephane and his wife, Claudine, have learned through their life experiences.",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-05-19-city-gates",
-    date: "2026-05-19",
-    category: "The Watchtower - Study Edition",
-    title: "City Gates in Bible Times",
-    description: "What activities took place at city gates in Bible times?",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-05-19-almond-tree",
-    date: "2026-05-19",
-    category: "The Watchtower - Study Edition",
-    title: "Bible Fact - The Tree That Wakes Up Early",
-    description: "Consider some facts about the almond tree and its use in the Bible.",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-05-19-august-2026",
-    date: "2026-05-19",
-    category: "The Watchtower - Study Edition",
-    title: "August 2026",
-    description: "This issue contains the study articles for October 5-November 1, 2026.",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-05-15-temporary-resident",
-    date: "2026-05-15",
-    category: "News Releases",
-    title: "BROTHER IMPRISONED | I Am a Temporary Resident in This World",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-05-14-oscar-cisano",
-    date: "2026-05-14",
-    category: "Life Stories",
-    title: "Oscar Cisano: I Have Gazed Upon the Pleasantness of Jehovah",
-    description: "Learn how Oscar experienced support while serving full-time despite having a visual impairment.",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-05-13-jehovahs-side",
-    date: "2026-05-13",
-    category: "News Releases",
-    title: "I Will Stay on Jehovah's Side",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-05-13-kenya-tanzania",
-    date: "2026-05-13",
-    category: "News Releases",
-    title: "Over 11,000 Bible Studies Requested During Preaching Campaign in Kenya and Tanzania",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  },
-  {
-    id: "2026-05-11-convinced-loved",
-    date: "2026-05-11",
-    category: "News Releases",
-    title: "I Am Convinced That Jehovah Loves Me Deeply",
-    description: "",
-    type: "article",
-    url: sourceUrl
-  }
-];
-
 const storageKey = "jw-whats-new-tracker-v8";
+const contentStorageKey = "jw-whats-new-content-v1";
+const items = loadCachedItems();
 const defaultProgress = {};
 const state = {
   filter: "unread",
   progress: loadProgress(),
+  contentStatus: items.length ? "ready" : "loading",
+  contentError: "",
   swipeStart: null,
   user: null,
   isAuthPreview: isLocalAuthPreview,
@@ -267,6 +34,84 @@ const accountSession = document.querySelector("#accountSession");
 const accountEmail = document.querySelector("#accountEmail");
 const accountStatus = document.querySelector("#accountStatus");
 const signOutButton = document.querySelector("#signOutButton");
+
+function normalizeContentItem(row) {
+  const type = row?.type === "video" ? "video" : row?.type === "article" ? "article" : null;
+  const date = String(row?.publication_date || row?.date || "");
+  if (!row?.id || !type || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+
+  let url = sourceUrl;
+  try {
+    const parsedUrl = new URL(String(row.url || sourceUrl));
+    if (parsedUrl.protocol === "https:") url = parsedUrl.href;
+  } catch {
+    url = sourceUrl;
+  }
+
+  return {
+    id: String(row.id),
+    date,
+    category: String(row.category || "Other"),
+    title: String(row.title || "Untitled"),
+    description: String(row.description || ""),
+    type,
+    url,
+    sortOrder: Number(row.sort_order || row.sortOrder || 0)
+  };
+}
+
+function loadCachedItems() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(contentStorageKey) || "[]");
+    return Array.isArray(cached) ? cached.map(normalizeContentItem).filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCachedItems() {
+  localStorage.setItem(contentStorageKey, JSON.stringify(items));
+}
+
+async function loadContentItems() {
+  if (!supabaseClient) {
+    state.contentStatus = items.length ? "ready" : "error";
+    state.contentError = "Content could not be loaded.";
+    render();
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("content_items")
+    .select("id, publication_date, category, title, description, type, url, sort_order")
+    .eq("published", true)
+    .order("publication_date", { ascending: false })
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    state.contentStatus = items.length ? "ready" : "error";
+    state.contentError = "Content could not be loaded. Please try again later.";
+    render();
+    return;
+  }
+
+  const loadedItems = (data || []).map(normalizeContentItem).filter(Boolean);
+  items.splice(0, items.length, ...loadedItems);
+  saveCachedItems();
+  state.contentStatus = "ready";
+  state.contentError = "";
+  render();
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[character]);
+}
 
 function loadProgress() {
   try {
@@ -444,7 +289,7 @@ function formatDate(value) {
 }
 
 function sortByNewestFirst(itemA, itemB) {
-  return itemB.date.localeCompare(itemA.date);
+  return itemB.date.localeCompare(itemA.date) || itemA.sortOrder - itemB.sortOrder;
 }
 
 function filteredItems() {
@@ -530,6 +375,16 @@ function animateStatNumber(element, nextValue) {
 }
 
 function renderList(visible) {
+  if (state.contentStatus === "loading" && !items.length) {
+    listEl.innerHTML = '<div class="empty">Loading articles and videos...</div>';
+    return;
+  }
+
+  if (state.contentStatus === "error" && !items.length) {
+    listEl.innerHTML = `<div class="empty">${escapeHtml(state.contentError)}</div>`;
+    return;
+  }
+
   if (!visible.length) {
     const allCaughtUp = state.filter === "unread";
     listEl.innerHTML = `<div class="empty ${allCaughtUp ? "all-caught-up" : ""}">${
@@ -541,19 +396,20 @@ function renderList(visible) {
   listEl.innerHTML = visible
     .map((item) => {
       const done = isDone(item.id);
+      const safeId = escapeHtml(item.id);
       return `
-        <article class="item ${done ? "done" : ""}" data-id="${item.id}">
+        <article class="item item-${item.type} ${done ? "done" : ""}" data-id="${safeId}">
           <div class="item-row">
             <div class="item-main">
               <div class="meta">
                 <span class="pill ${item.type}">${item.type}</span>
-                <span class="category">${item.category}</span>
+                <span class="category">${escapeHtml(item.category)}</span>
               </div>
-              <h3><a href="${item.url}" target="_blank" rel="noreferrer">${item.title}</a></h3>
+              <h3><a href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a></h3>
               <span class="date">${formatDate(item.date)}</span>
-              ${item.description && item.type !== "video" ? `<p class="desc">${item.description}</p>` : ""}
+              ${item.description && item.type !== "video" ? `<p class="desc">${escapeHtml(item.description)}</p>` : ""}
             </div>
-            <button class="complete-button" data-id="${item.id}" type="button" aria-label="${done ? "Mark open" : "Mark complete"}"></button>
+            <button class="complete-button" data-id="${safeId}" type="button" aria-label="${done ? "Mark open" : "Mark complete"}"></button>
           </div>
         </article>
       `;
@@ -616,6 +472,10 @@ function setStrikeProgress(lines, progress) {
     line.style.backgroundSize = `${fill * 100}% 2px`;
     completedWidth -= lineWidth;
   });
+}
+
+function findRenderedItem(id) {
+  return Array.from(listEl.querySelectorAll(".item")).find((item) => item.dataset.id === id) || null;
 }
 
 function animateTitleStrike(item, done) {
@@ -687,7 +547,7 @@ function toggleItem(id) {
   const nextDone = !isDone(id);
 
   if (nextDone) {
-    const item = listEl.querySelector(`[data-id="${id}"]`);
+    const item = findRenderedItem(id);
     item?.classList.add("marking-done");
     animateTitleStrike(item, true);
     window.setTimeout(() => {
@@ -701,7 +561,7 @@ function toggleItem(id) {
     return;
   }
 
-  const item = listEl.querySelector(`[data-id="${id}"]`);
+  const item = findRenderedItem(id);
   item?.classList.add("marking-open");
   animateTitleStrike(item, false);
   window.setTimeout(() => {
@@ -852,7 +712,7 @@ listEl.addEventListener("pointermove", (event) => {
   if (!state.swipeStart) return;
   const dx = event.clientX - state.swipeStart.x;
   const dy = event.clientY - state.swipeStart.y;
-  const item = listEl.querySelector(`[data-id="${state.swipeStart.id}"]`);
+  const item = findRenderedItem(state.swipeStart.id);
   if (item && Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) * 1.4) {
     item.classList.add("swiping");
   }
@@ -877,3 +737,4 @@ listEl.addEventListener("pointercancel", () => {
 
 render();
 initializeAuth();
+loadContentItems();

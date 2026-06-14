@@ -107,6 +107,51 @@ h1 {
   flex: 0 0 auto;
 }
 
+.account-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sync-indicator {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  color: var(--blue);
+}
+
+.sync-indicator[hidden] {
+  display: none;
+}
+
+.sync-indicator svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sync-spinner-icon {
+  display: none;
+}
+
+.sync-indicator.syncing .sync-cloud-icon {
+  display: none;
+}
+
+.sync-indicator.syncing .sync-spinner-icon {
+  display: block;
+  animation: syncSpin 900ms linear infinite;
+}
+
+.sync-indicator.error {
+  color: #b14a3b;
+}
+
 .profile-button {
   position: relative;
   z-index: 19;
@@ -150,6 +195,18 @@ h1 {
   stroke: currentColor;
   stroke-width: 1.7;
   stroke-linecap: round;
+}
+
+@keyframes syncSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sync-indicator.syncing .sync-spinner-icon {
+    animation-duration: 1800ms;
+  }
 }
 
 .page-dimmer {

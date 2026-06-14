@@ -296,8 +296,7 @@ async function main() {
   const catalog = parseWhatsNew(html);
   catalog.videos = parseLatestVideos(videoData);
     const videoTitles = new Set(catalog.videos.map((item) => normalizeTitle(item.title)));
-    catalog.articles = catalog.articles.filter((item) => !videoTitles.has(normalizeTitle(item.title)));
-  const videoTitles = new Set(catalog.videos.map((item) => normalizeTitle(item.title)));
+    catalog.articles = catalog.articles.filter((item) => !videoTitles.has(normalizeTitle(item.title)))
   catalog.articles = catalog.articles.filter((item) => !videoTitles.has(normalizeTitle(item.title)));
   validateCatalog(catalog);
   const existingItems = await loadExistingItems(supabaseUrl, secretKey);

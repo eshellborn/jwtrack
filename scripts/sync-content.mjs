@@ -295,6 +295,8 @@ async function main() {
   const [html, videoData] = await Promise.all([fetchSource(), fetchLatestVideos()]);
   const catalog = parseWhatsNew(html);
   catalog.videos = parseLatestVideos(videoData);
+    const videoTitles = new Set(catalog.videos.map((item) => normalizeTitle(item.title)));
+    catalog.articles = catalog.articles.filter((item) => !videoTitles.has(normalizeTitle(item.title)));
   const videoTitles = new Set(catalog.videos.map((item) => normalizeTitle(item.title)));
   catalog.articles = catalog.articles.filter((item) => !videoTitles.has(normalizeTitle(item.title)));
   validateCatalog(catalog);

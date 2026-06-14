@@ -251,10 +251,7 @@ const state = {
   swipeStart: null,
   user: null,
   isAuthPreview: isLocalAuthPreview,
-  isSigningOut: false,
-  syncRequests: 0,
-  syncFailed: false,
-  syncState: "synced"
+  isSigningOut: false
 };
 
 const listEl = document.querySelector("#itemList");
@@ -262,7 +259,6 @@ const segmentsEl = document.querySelector(".segments");
 const markAllUnreadButton = document.querySelector("#markAllUnread");
 const accountEl = document.querySelector(".account");
 const profileButton = document.querySelector("#profileButton");
-const syncIndicator = document.querySelector("#syncIndicator");
 const accountMenu = document.querySelector("#accountMenu");
 const pageDimmer = document.querySelector("#pageDimmer");
 const sheetCloseButton = document.querySelector("#sheetCloseButton");
@@ -306,33 +302,9 @@ function setAccountStatus(message, isError = false) {
   accountMenu.classList.toggle("has-status", Boolean(normalizedMessage));
 }
 
-function setSyncState(syncState) {
-  state.syncState = syncState;
-  syncIndicator.classList.toggle("syncing", syncState === "syncing");
-  syncIndicator.classList.toggle("error", syncState === "error");
-  syncIndicator.setAttribute(
-    "aria-label",
-    syncState === "syncing" ? "Syncing" : syncState === "error" ? "Sync failed" : "Everything synced"
-  );
-}
-
-function beginSync() {
-  if (state.syncRequests === 0) state.syncFailed = false;
-  state.syncRequests += 1;
-  setSyncState("syncing");
-}
-
-function finishSync(error = false) {
-  state.syncFailed ||= error;
-  state.syncRequests = Math.max(0, state.syncRequests - 1);
-  if (state.syncRequests > 0) return;
-  setSyncState(state.syncFailed ? "error" : "synced");
-}
-
 function updateAccountUI() {
   const signedIn = Boolean(state.user);
   accountEl.classList.toggle("signed-in", signedIn);
-  syncIndicator.hidden = !signedIn;
   signInForm.hidden = signedIn;
   accountSession.hidden = !signedIn;
   accountEmail.textContent = state.user?.email || "Signed in";
@@ -374,7 +346,6 @@ function closeAccountMenuAfterAnimation() {
 async function syncProgressChange(itemId, done) {
   if (!supabaseClient || !state.user || state.isAuthPreview) return;
 
-  beginSync();
   setAccountStatus("Syncing...");
   const request = done
     ? supabaseClient.from("user_progress").upsert({ user_id: state.user.id, item_id: itemId })
@@ -386,18 +357,15 @@ async function syncProgressChange(itemId, done) {
   const { error } = await request;
 
   if (error) {
-    finishSync(true);
     setAccountStatus(`Saved on this device, but sync failed: ${error.message}`, true);
     return;
   }
-  finishSync();
   setAccountStatus("");
 }
 
 async function loadCloudProgress() {
   if (!supabaseClient || !state.user) return;
 
-  beginSync();
   setAccountStatus("Syncing progress...");
   const localIds = Object.keys(state.progress).filter((id) => state.progress[id]);
   const { data, error } = await supabaseClient
@@ -406,7 +374,6 @@ async function loadCloudProgress() {
     .eq("user_id", state.user.id);
 
   if (error) {
-    finishSync(true);
     setAccountStatus(`Signed in, but progress sync failed: ${error.message}`, true);
     return;
   }
@@ -422,13 +389,11 @@ async function loadCloudProgress() {
     const rows = missingCloudIds.map((itemId) => ({ user_id: state.user.id, item_id: itemId }));
     const { error: migrationError } = await supabaseClient.from("user_progress").upsert(rows);
     if (migrationError) {
-      finishSync(true);
       setAccountStatus(`Signed in, but local progress could not be uploaded: ${migrationError.message}`, true);
       return;
     }
   }
 
-  finishSync();
   setAccountStatus("");
 }
 
@@ -448,7 +413,6 @@ async function initializeAuth() {
   if (state.isAuthPreview) {
     state.user = { id: "local-preview-user", email: "preview@example.com" };
     updateAccountUI();
-    setSyncState("synced");
     setAccountStatus("");
     return;
   }
@@ -790,13 +754,11 @@ markAllUnreadButton.addEventListener("click", async () => {
   render();
 
   if (supabaseClient && state.user && !state.isAuthPreview) {
-    beginSync();
     setAccountStatus("Syncing...");
     const { error } = await supabaseClient
       .from("user_progress")
       .delete()
       .eq("user_id", state.user.id);
-    finishSync(Boolean(error));
     setAccountStatus(
       error ? `Cleared on this device, but sync failed: ${error.message}` : "",
       Boolean(error)

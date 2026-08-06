@@ -266,12 +266,15 @@ async function loadCloudProgress() {
   }
 
   const cloudIds = (data || []).map((row) => row.item_id);
-  const mergedIds = [...new Set([...cloudIds, ...localIds])];
-  state.progress = Object.fromEntries(mergedIds.map((id) => [id, true]));
+
+  // Server wins
+  state.progress = Object.fromEntries(cloudIds.map((id) => [id, true]));
   saveProgress();
   render();
 
+  // Upload only items that exist locally but not on the server
   const missingCloudIds = localIds.filter((id) => !cloudIds.includes(id));
+  
   if (missingCloudIds.length) {
     const rows = missingCloudIds.map((itemId) => ({ user_id: state.user.id, item_id: itemId }));
     const { error: migrationError } = await supabaseClient.from("user_progress").upsert(rows);

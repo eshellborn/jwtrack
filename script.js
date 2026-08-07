@@ -251,8 +251,6 @@ async function syncProgressChange(itemId, done) {
 }
 
 async function loadCloudProgress() {
-  // console.trace("loadCloudProgress");
-  console.log("hello1");
   if (!supabaseClient || !state.user) return;
 
   setAccountStatus("Syncing progress...");
@@ -290,6 +288,10 @@ async function loadCloudProgress() {
 }
 
 async function applySession(session) {
+  console.log(
+    "applySession",
+    session?.user?.email ?? "(signed out)"
+  );
   if (!session && state.isSigningOut) return;
 
   state.user = session?.user || null;

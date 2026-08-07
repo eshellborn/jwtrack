@@ -251,7 +251,7 @@ async function syncProgressChange(itemId, done) {
 }
 
 async function loadCloudProgress() {
-  console.trace("loadCloudProgress");
+  console.log("loadCloudProgress()", new Date().toISOString());
   if (!supabaseClient || !state.user) return;
 
   setAccountStatus("Syncing progress...");

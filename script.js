@@ -261,6 +261,10 @@ async function loadCloudProgress() {
     .select("item_id")
     .eq("user_id", state.user.id);
 
+  console.log("hello");
+  console.log("Cloud IDs:", data?.map(r => r.item_id));
+  console.log("Local IDs:", Object.keys(state.progress));
+
   if (error) {
     setAccountStatus(`Signed in, but progress sync failed: ${error.message}`, true);
     return;

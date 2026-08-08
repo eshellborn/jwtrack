@@ -254,15 +254,10 @@ async function loadCloudProgress() {
   if (!supabaseClient || !state.user) return;
 
   setAccountStatus("Syncing progress...");
-  const localIds = Object.keys(state.progress).filter((id) => state.progress[id]);
   const { data, error } = await supabaseClient
     .from("user_progress")
     .select("item_id")
     .eq("user_id", state.user.id);
-
-  console.log("hello");
-  console.log("Cloud IDs:", data?.map(r => r.item_id));
-  console.log("Local IDs:", Object.keys(state.progress));
 
   if (error) {
     setAccountStatus(`Signed in, but progress sync failed: ${error.message}`, true);
@@ -271,22 +266,9 @@ async function loadCloudProgress() {
 
   const cloudIds = (data || []).map((row) => row.item_id);
 
-  // Server wins
   state.progress = Object.fromEntries(cloudIds.map((id) => [id, true]));
   saveProgress();
   render();
-
-  // Upload only items that exist locally but not on the server
-  const missingCloudIds = localIds.filter((id) => !cloudIds.includes(id));
-  
-  if (missingCloudIds.length) {
-    const rows = missingCloudIds.map((itemId) => ({ user_id: state.user.id, item_id: itemId }));
-    const { error: migrationError } = await supabaseClient.from("user_progress").upsert(rows);
-    if (migrationError) {
-      setAccountStatus(`Signed in, but local progress could not be uploaded: ${migrationError.message}`, true);
-      return;
-    }
-  }
 
   setAccountStatus("");
 }

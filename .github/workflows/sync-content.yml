@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: Check for updates without saving or emailing
+        description: Check for updates without saving
         type: boolean
         default: false
 
@@ -24,9 +24,6 @@ jobs:
     env:
       SUPABASE_URL: https://fgikbmwjdentpumhdzeu.supabase.co
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
-      RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
 
     steps:
       - name: Check out repository

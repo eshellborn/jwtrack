@@ -4,8 +4,6 @@ const supabasePublishableKey = "sb_publishable_bX9yx0-MyUjNY0TgpgeTTw_p4E1CFkq";
 const supabaseClient = typeof supabase === "undefined"
   ? null
   : supabase.createClient(supabaseUrl, supabasePublishableKey);
-const isLocalAuthPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname)
-  && new URLSearchParams(window.location.search).get("preview") === "signed-in";
 const storageKey = "jw-whats-new-tracker-v8";
 const contentStorageKey = "jw-whats-new-content-v1";
 const items = loadCachedItems();
@@ -15,27 +13,12 @@ const state = {
   progress: loadProgress(),
   contentStatus: items.length ? "ready" : "loading",
   contentError: "",
-  swipeStart: null,
-  user: null,
-  emailNotifications: false,
-  isAuthPreview: isLocalAuthPreview,
-  isSigningOut: false
+  swipeStart: null
 };
 
 const listEl = document.querySelector("#itemList");
 const segmentsEl = document.querySelector(".segments");
 const markAllUnreadButton = document.querySelector("#markAllUnread");
-const accountEl = document.querySelector(".account");
-const profileButton = document.querySelector("#profileButton");
-const accountMenu = document.querySelector("#accountMenu");
-const pageDimmer = document.querySelector("#pageDimmer");
-const sheetCloseButton = document.querySelector("#sheetCloseButton");
-const signInForm = document.querySelector("#signInForm");
-const accountSession = document.querySelector("#accountSession");
-const accountEmail = document.querySelector("#accountEmail");
-const accountStatus = document.querySelector("#accountStatus");
-const signOutButton = document.querySelector("#signOutButton");
-const emailNotifications = document.querySelector("#emailNotifications");
 
 function normalizeContentItem(row) {
   const type = row?.type === "video" ? "video" : row?.type === "article" ? "article" : null;
@@ -139,178 +122,34 @@ function setDone(id, done) {
     delete state.progress[id];
   }
   saveProgress();
-  syncProgressChange(id, done);
-}
-
-function setAccountStatus(message, isError = false) {
-  const normalizedMessage = message ? message.charAt(0).toUpperCase() + message.slice(1) : "";
-  accountStatus.textContent = normalizedMessage;
-  accountStatus.classList.toggle("error", isError);
-  accountMenu.classList.toggle("has-status", Boolean(normalizedMessage));
-}
-
-function updateAccountUI() {
-  const signedIn = Boolean(state.user);
-  accountEl.classList.toggle("signed-in", signedIn);
-  signInForm.hidden = signedIn;
-  accountSession.hidden = !signedIn;
-  accountEmail.textContent = state.user?.email || "Signed in";
-  emailNotifications.checked = state.emailNotifications;
-}
-
-async function loadNotificationPreference() {
-  if (!supabaseClient || !state.user || state.isAuthPreview) return;
-
-  const { data, error } = await supabaseClient
-    .from("notification_preferences")
-    .select("enabled")
-    .eq("user_id", state.user.id)
-    .maybeSingle();
-
-  if (error) {
-    setAccountStatus(`Could not load email preference: ${error.message}`, true);
-    return;
-  }
-
-  state.emailNotifications = Boolean(data?.enabled);
-  updateAccountUI();
-}
-
-async function saveNotificationPreference(enabled) {
-  if (!supabaseClient || !state.user || state.isAuthPreview) return;
-
-  emailNotifications.disabled = true;
-  setAccountStatus("Saving email preference...");
-  const { error } = await supabaseClient.from("notification_preferences").upsert({
-    user_id: state.user.id,
-    enabled
-  });
-  emailNotifications.disabled = false;
-
-  if (error) {
-    state.emailNotifications = !enabled;
-    updateAccountUI();
-    setAccountStatus(`Could not save email preference: ${error.message}`, true);
-    return;
-  }
-
-  setAccountStatus(enabled ? "Email notifications enabled." : "Email notifications disabled.");
-}
-
-function setAccountMenuOpen(open) {
-  accountMenu.classList.toggle("open", open);
-  pageDimmer.classList.toggle("open", open);
-  accountMenu.setAttribute("aria-hidden", String(!open));
-  profileButton.setAttribute("aria-expanded", String(open));
-  profileButton.setAttribute("aria-label", open ? "Close account menu" : "Open account menu");
-}
-
-function closeAccountMenuAfterAnimation() {
-  if (!accountMenu.classList.contains("open")) {
-    setAccountMenuOpen(false);
-    return Promise.resolve();
-  }
-
-  return new Promise((resolve) => {
-    let finished = false;
-    const finish = () => {
-      if (finished) return;
-      finished = true;
-      accountMenu.removeEventListener("transitionend", handleTransitionEnd);
-      window.clearTimeout(fallbackTimer);
-      resolve();
-    };
-    const handleTransitionEnd = (event) => {
-      if (event.target === accountMenu && event.propertyName === "transform") finish();
-    };
-    const fallbackTimer = window.setTimeout(finish, 500);
-
-    accountMenu.addEventListener("transitionend", handleTransitionEnd);
-    setAccountMenuOpen(false);
-  });
+  void syncProgressChange(id, done);
 }
 
 async function syncProgressChange(itemId, done) {
-  if (!supabaseClient || !state.user || state.isAuthPreview) return;
+  if (!supabaseClient) return;
 
-  setAccountStatus("Syncing...");
   const request = done
-    ? supabaseClient.from("user_progress").upsert({ user_id: state.user.id, item_id: itemId })
-    : supabaseClient
-        .from("user_progress")
-        .delete()
-        .eq("user_id", state.user.id)
-        .eq("item_id", itemId);
+    ? supabaseClient.from("shared_progress").upsert({ item_id: itemId })
+    : supabaseClient.from("shared_progress").delete().eq("item_id", itemId);
   const { error } = await request;
 
   if (error) {
-    setAccountStatus(`Saved on this device, but sync failed: ${error.message}`, true);
-    return;
+    console.warn("Could not save shared progress:", error.message);
   }
-  setAccountStatus("");
 }
 
-async function loadCloudProgress() {
-  if (!supabaseClient || !state.user) return;
+async function loadSharedProgress() {
+  if (!supabaseClient) return;
 
-  setAccountStatus("Syncing progress...");
-  const { data, error } = await supabaseClient
-    .from("user_progress")
-    .select("item_id")
-    .eq("user_id", state.user.id);
-
+  const { data, error } = await supabaseClient.from("shared_progress").select("item_id");
   if (error) {
-    setAccountStatus(`Signed in, but progress sync failed: ${error.message}`, true);
+    console.warn("Could not load shared progress:", error.message);
     return;
   }
 
-  const cloudIds = (data || []).map((row) => row.item_id);
-
-  state.progress = Object.fromEntries(cloudIds.map((id) => [id, true]));
+  state.progress = Object.fromEntries((data || []).map(({ item_id }) => [item_id, true]));
   saveProgress();
   render();
-
-  setAccountStatus("");
-}
-
-async function applySession(session) {
-  if (!session && state.isSigningOut) return;
-
-  state.user = session?.user || null;
-  updateAccountUI();
-  if (state.user) {
-    await Promise.all([loadCloudProgress(), loadNotificationPreference()]);
-  } else {
-    state.emailNotifications = false;
-    updateAccountUI();
-    setAccountStatus("");
-  }
-}
-
-async function initializeAuth() {
-  if (state.isAuthPreview) {
-    state.user = { id: "local-preview-user", email: "preview@example.com" };
-    updateAccountUI();
-    setAccountStatus("");
-    return;
-  }
-
-  if (!supabaseClient) {
-    setAccountStatus("Cloud sync could not load. Local progress is still available.", true);
-    return;
-  }
-
-  const { data, error } = await supabaseClient.auth.getSession();
-  if (error) {
-    setAccountStatus(`Could not restore sign-in: ${error.message}`, true);
-  } else {
-    await applySession(data.session);
-  }
-
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (event === "INITIAL_SESSION") return;
-    window.setTimeout(() => applySession(session), 0);
-  });
 }
 
 function formatDate(value) {
@@ -620,106 +459,22 @@ document.querySelector(".segments").addEventListener("click", (event) => {
   updateFilterIndicator();
 });
 
-profileButton.addEventListener("click", () => {
-  setAccountMenuOpen(profileButton.getAttribute("aria-expanded") !== "true");
-});
-
-sheetCloseButton.addEventListener("click", () => {
-  setAccountMenuOpen(false);
-  profileButton.focus();
-});
-
-document.addEventListener("click", (event) => {
-  if (!accountEl.contains(event.target)) {
-    setAccountMenuOpen(false);
-  }
-});
-
-document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape" || profileButton.getAttribute("aria-expanded") !== "true") return;
-  setAccountMenuOpen(false);
-  profileButton.focus();
-});
-
-markAllUnreadButton.addEventListener("click", async () => {
+markAllUnreadButton.addEventListener("click", () => {
+  const completedItemIds = Object.keys(state.progress);
   state.progress = {};
   saveProgress();
   render();
 
-  if (supabaseClient && state.user && !state.isAuthPreview) {
-    setAccountStatus("Syncing...");
-    const { error } = await supabaseClient
-      .from("user_progress")
-      .delete()
-      .eq("user_id", state.user.id);
-    setAccountStatus(
-      error ? `Cleared on this device, but sync failed: ${error.message}` : "",
-      Boolean(error)
-    );
+  if (supabaseClient && completedItemIds.length) {
+    void Promise.all(
+      completedItemIds.map((itemId) =>
+        supabaseClient.from("shared_progress").delete().eq("item_id", itemId)
+      )
+    ).then((results) => {
+      const failed = results.find((result) => result.error);
+      if (failed) console.warn("Could not reset shared progress:", failed.error.message);
+    });
   }
-});
-
-signInForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (!supabaseClient) return;
-
-  const submitButton = signInForm.querySelector("button[type='submit']");
-  const email = new FormData(signInForm).get("email").trim();
-  submitButton.disabled = true;
-  setAccountStatus("Sending sign-in link...");
-
-  const { error } = await supabaseClient.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: `${window.location.origin}${window.location.pathname}`
-    }
-  });
-
-  submitButton.disabled = false;
-  setAccountStatus(
-    error ? error.message : "Check your email for the sign-in link.",
-    Boolean(error)
-  );
-});
-
-signOutButton.addEventListener("click", async () => {
-  state.isSigningOut = true;
-
-  if (state.isAuthPreview) {
-    await closeAccountMenuAfterAnimation();
-    state.user = null;
-    updateAccountUI();
-    setAccountStatus("");
-    state.isSigningOut = false;
-    profileButton.focus();
-    return;
-  }
-
-  if (!supabaseClient) {
-    state.isSigningOut = false;
-    return;
-  }
-  setAccountStatus("Signing out...");
-  const { error } = await supabaseClient.auth.signOut();
-  if (error) {
-    state.isSigningOut = false;
-    setAccountStatus(error.message, true);
-    return;
-  }
-  await closeAccountMenuAfterAnimation();
-  state.user = null;
-  updateAccountUI();
-  setAccountStatus("");
-  state.progress = {};
-  saveProgress();
-  render();
-  state.isSigningOut = false;
-  profileButton.focus();
-});
-
-emailNotifications.addEventListener("change", () => {
-  state.emailNotifications = emailNotifications.checked;
-  saveNotificationPreference(state.emailNotifications);
 });
 
 window.addEventListener("resize", () => {
@@ -774,5 +529,5 @@ listEl.addEventListener("pointercancel", () => {
 });
 
 render();
-initializeAuth();
+loadSharedProgress();
 loadContentItems();

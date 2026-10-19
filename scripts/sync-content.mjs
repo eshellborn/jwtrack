@@ -1,7 +1,6 @@
 import * as cheerio from "cheerio";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { createHash } from "node:crypto";
 
 const sourceUrl = "https://www.jw.org/en/whats-new/";
 const videoFeedUrl = "https://b.jw-cdn.org/apis/mediator/v1/categories/E/LatestVideos?detailed=1&clientType=www";
@@ -219,53 +218,6 @@ async function unpublishMissingItems(supabaseUrl, secretKey, existingItems, curr
   return staleIds.length;
 }
 
-function escapeHtml(value) {
-  return cleanText(value).replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[character]);
-}
-
-async function sendNotification(apiKey, recipient, sender, newItems) {
-  const itemWord = newItems.length === 1 ? "item" : "items";
-  const rows = newItems.map((item) => `
-    <li style="margin-bottom: 14px">
-      <strong>${escapeHtml(item.type === "video" ? "Video" : "Article")}</strong><br>
-      <a href="${escapeHtml(item.url)}">${escapeHtml(item.title)}</a><br>
-      <span style="color: #666">${escapeHtml(item.publication_date)}</span>
-    </li>`).join("");
-
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "Idempotency-Key": `jwtrack-${createHash("sha256").update(recipient).digest("hex").slice(0, 16)}-${newItems.map((item) => item.id).sort().join("-")}`.slice(0, 256)
-    },
-    body: JSON.stringify({
-      from: sender,
-      to: [recipient],
-      subject: `${newItems.length} new JW.org ${itemWord}`,
-      html: `<h2>New on JW.org</h2><ul style="padding-left: 20px">${rows}</ul>`
-    })
-  });
-  await readResponse(response, "Sending notification email");
-}
-
-async function loadNotificationSubscribers(supabaseUrl, secretKey) {
-  const endpoint = new URL("/rest/v1/rpc/notification_subscribers", supabaseUrl);
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: supabaseHeaders(secretKey, { "Content-Type": "application/json" }),
-    body: "{}"
-  });
-  const rows = await readResponse(response, "Loading notification subscribers");
-  return [...new Set((rows || []).map((row) => cleanText(row.email)).filter(Boolean))];
-}
-
 async function fetchSource() {
   const response = await fetch(sourceUrl, {
     headers: {
@@ -307,25 +259,8 @@ async function main() {
   console.log(`Found ${catalog.articles.length} articles and ${catalog.videos.length} videos.`);
   console.log(`New items: ${newItems.length}.`);
   if (dryRun) {
-    const subscribers = await loadNotificationSubscribers(supabaseUrl, secretKey);
-    console.log(`Email subscribers: ${subscribers.length}.`);
     for (const item of newItems) console.log(`- ${item.type}: ${item.title}`);
     return;
-  }
-
-  if (newItems.length) {
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (!resendApiKey) {
-      throw new Error("New content was found, but RESEND_API_KEY is missing.");
-    }
-    const subscribers = await loadNotificationSubscribers(supabaseUrl, secretKey);
-    await Promise.all(subscribers.map((email) => sendNotification(
-      resendApiKey,
-      email,
-      process.env.RESEND_FROM_EMAIL || "JW Track <onboarding@resend.dev>",
-      newItems
-    )));
-    console.log(`Sent ${subscribers.length} notification email(s) for ${newItems.length} new item(s).`);
   }
 
   await upsertItems(supabaseUrl, secretKey, scrapedItems);

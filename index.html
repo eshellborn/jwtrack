@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="styles.css?v=84" />
   </head>
   <body>
-    <div class="page-dimmer" id="pageDimmer" aria-hidden="true"></div>
     <main class="shell">
       <header class="top">
         <div class="brand">
@@ -21,52 +20,6 @@
             <h1>JW.org What&rsquo;s New Tracker</h1>
           </div>
         </div>
-        <section class="account" aria-label="Account">
-          <button
-            class="profile-button"
-            id="profileButton"
-            type="button"
-            aria-label="Open account menu"
-            aria-expanded="false"
-            aria-controls="accountMenu"
-          >
-            <svg class="profile-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="8" r="4"></circle>
-              <path d="M4.5 20c.7-4.1 3.2-6.2 7.5-6.2s6.8 2.1 7.5 6.2"></path>
-            </svg>
-          </button>
-          <div class="account-menu" id="accountMenu" aria-hidden="true">
-            <button class="sheet-close-button" id="sheetCloseButton" type="button" aria-label="Close account menu">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6 6l12 12M18 6 6 18"></path>
-              </svg>
-            </button>
-            <div class="account-content">
-              <form class="sign-in-form" id="signInForm">
-                <p>
-                  Sign in to sync across devices.<br />
-                  Enter your email below to receive a sign-in link.
-                </p>
-                <label class="sr-only" for="email">Email address</label>
-                <input id="email" name="email" type="email" autocomplete="email" placeholder="Email address" required />
-                <button type="submit">Submit</button>
-              </form>
-              <div class="account-session" id="accountSession" hidden>
-                <p class="account-identity">Signed in as <strong id="accountEmail"></strong></p>
-                <label class="notification-preference" for="emailNotifications">
-                  <span>
-                    <strong>Email notifications</strong>
-                    <small>Get an email when new items are added.</small>
-                  </span>
-                  <input id="emailNotifications" type="checkbox" role="switch" />
-                  <span class="toggle" aria-hidden="true"></span>
-                </label>
-                <button id="signOutButton" type="button">Sign out</button>
-              </div>
-              <p class="account-status" id="accountStatus" aria-live="polite"></p>
-            </div>
-          </div>
-        </section>
       </header>
 
       <section class="stats" aria-label="Stats">

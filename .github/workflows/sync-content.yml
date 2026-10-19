@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: Check for updates without saving or emailing
+        description: Check for updates without saving
         type: boolean
         default: false
 

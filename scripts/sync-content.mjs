@@ -227,6 +227,7 @@ async function fetchSource() {
     }
   });
   if (!response.ok) throw new Error(`JW.org request failed (${response.status}).`);
+  console.log(`JW.org HTTP status: ${response.status}; content type: ${response.headers.get("content-type")}`);
   return response.text();
 }
 
@@ -245,7 +246,21 @@ async function main() {
   if (!secretKey) throw new Error("SUPABASE_SECRET_KEY is required.");
 
   const [html, videoData] = await Promise.all([fetchSource(), fetchLatestVideos()]);
+
+  const diagnosticDom = cheerio.load(html);
+
+  console.log("\nJW.org page diagnostics:");
+  console.log({
+    htmlLength: html.length,
+    pageTitle: cleanText(diagnosticDom("title").text()),
+    whatsNewContainers: diagnosticDom(".whatsNewItems").length,
+    articleCards: diagnosticDom(".whatsNewItems .synopsis").length,
+    pubDateElements: diagnosticDom(".whatsNewItems .synopsis .pubDate").length,
+    firstCard: diagnosticDom(".whatsNewItems .synopsis").first().html()?.slice(0, 800) ?? null
+  });
+
   const catalog = parseWhatsNew(html);
+  console.log("Articles successfully parsed:", catalog.articles.length);
   catalog.videos = parseLatestVideos(videoData);
     const videoTitles = new Set(catalog.videos.map((item) => normalizeTitle(item.title)));
     catalog.articles = catalog.articles.filter((item) => !videoTitles.has(normalizeTitle(item.title)))

@@ -41,44 +41,5 @@ jobs:
         run: npm test
 
         
-      - name: Test JW.org RSS feed
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          node --input-type=module <<'NODE'
-          import * as cheerio from "cheerio";
-
-          const url = "https://www.jw.org/en/whats-new/rss/WhatsNewWebArticles/feed.xml";
-
-          const response = await fetch(url, {
-            headers: {
-              Accept: "application/rss+xml,application/xml,text/xml",
-              "User-Agent": "JWTrack/1.0"
-            }
-          });
-
-          const xml = await response.text();
-          const $ = cheerio.load(xml, { xmlMode: true });
-          const items = $("channel > item");
-
-          console.log("RSS HTTP status:", response.status);
-          console.log("RSS content type:", response.headers.get("content-type"));
-          console.log("RSS response size:", xml.length);
-          console.log("RSS articles found:", items.length);
-
-          items.slice(0, 3).each((i, item) => {
-            const entry = $(item);
-            console.log({
-              guid: entry.find("guid").text().trim(),
-              title: entry.find("title").text().trim(),
-              pubDate: entry.find("pubDate").text().trim()
-            });
-          });
-
-          if (!response.ok || items.length === 0) {
-            throw new Error("RSS feed test failed.");
-          }
-          NODE
-
-
       - name: Sync content
         run: npm run sync -- ${{ inputs.dry_run && '--dry-run' || '' }}

@@ -252,6 +252,8 @@ async function main() {
   console.log("\nJW.org page diagnostics:");
   console.log({
     htmlLength: html.length,
+    responsePreview: html.slice(0, 1200),
+    responseEnding: html.slice(-500),
     pageTitle: cleanText(diagnosticDom("title").text()),
     whatsNewContainers: diagnosticDom(".whatsNewItems").length,
     articleCards: diagnosticDom(".whatsNewItems .synopsis").length,

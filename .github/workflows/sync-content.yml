@@ -40,6 +40,5 @@ jobs:
       - name: Test feed parser
         run: npm test
 
-        
       - name: Sync content
         run: npm run sync -- ${{ inputs.dry_run && '--dry-run' || '' }}
